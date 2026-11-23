@@ -1,0 +1,12 @@
+# TechQuickRef 站点根目录规则（Apache / InfinityFree 适用）
+
+# 第一顺位入口必须是 index.php
+DirectoryIndex index.php index.html
+
+# 关闭目录浏览，避免暴露 data/ lib/ 等目录
+Options -Indexes
+
+# 禁止直接访问配置与数据库文件
+<FilesMatch "^(config\.php|config\.example\.php|.*\.sqlite|.*\.db)$">
+    Require all denied
+</FilesMatch>
