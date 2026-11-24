@@ -155,7 +155,7 @@ CODE
 .item {
   flex-grow: 1;     /* 剩余空间分配比 */
   flex-shrink: 0;   /* 收缩比 */
-  flex-basis: 200px;/* 基准尺寸 */
+  flex-basis: auto;/* 基准尺寸 */
   flex: 1;          /* grow:1 shrink:1 basis:0 简写 */
   align-self: center; /* 单独覆盖对齐 */
   order: -1;         /* 排序权重 */

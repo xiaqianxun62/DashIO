@@ -164,6 +164,7 @@ page_header(['title' => '管理后台']);
     <?php if (is_file(__DIR__ . '/php-check.php')): ?>
       <a class="btn btn-ghost" href="<?= u('php-check.php') ?>"><?= icon('activity') ?>部署自检</a>
     <?php endif; ?>
+    <a class="btn btn-ghost" href="<?= u('music.php') ?>"><?= icon('list-music') ?>音乐 / 歌单管理</a>
     <?php if (!is_file(__DIR__ . '/import-md.php') && !is_file(__DIR__ . '/add-seed.php')): ?>
       <span class="hint">导入页已清理，需要时重新上传 import-md.php 即可。</span>
     <?php endif; ?>

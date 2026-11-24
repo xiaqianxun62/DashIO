@@ -418,7 +418,7 @@ code {
 
 /* 卡片宽度跟随内容：宽内容占更宽的卡位，flex-basis 由前端测量后设置 */
 .entry-grid { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 12px; }
-.entry-grid > .entry { flex: 0 1 340px; max-width: 100%; }
+.entry-grid > .entry { flex: 1 1 340px; max-width: 70%; }
 
 .entry {
   display: flex;
@@ -762,7 +762,150 @@ code {
 }
 
 @media print {
-  .topbar, .cat-nav, .footer, .entry-tools, .sheet-toolbar, .copy-btn { display: none !important; }
+  .topbar, .cat-nav, .footer, .entry-tools, .sheet-toolbar, .copy-btn, .mini-player, .player-space { display: none !important; }
   .entry { break-inside: avoid; border-color: #cccccc; }
   .code-block { border-color: #dddddd; }
+}
+
+/* ---------- 音乐：底部播放器 ---------- */
+
+/* 给固定播放器留出空间，避免盖住页脚 */
+.player-space { height: 60px; }
+
+.mini-player {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  height: 56px;
+  padding: 0 16px;
+  background: var(--bg);
+  border-top: 1px solid var(--line);
+}
+
+.player-main { display: flex; align-items: center; gap: 2px; flex: none; }
+.player-btn { width: 30px; height: 30px; }
+.player-play { width: 32px; height: 32px; color: var(--pri); border-color: var(--line); }
+.player-play:hover { background: var(--pri-soft); border-color: var(--pri); }
+.player-btn .icon { width: 15px; height: 15px; }
+
+.player-info { width: 200px; flex: none; min-width: 0; }
+.player-title { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.player-artist { font-size: 13px; color: var(--fg-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.player-seek { flex: 1; min-width: 0; display: flex; align-items: center; gap: 8px; }
+.player-seek input[type="range"],
+.player-right input[type="range"] {
+  height: 16px;
+  margin: 0;
+  background: transparent;
+  accent-color: var(--pri);
+  cursor: pointer;
+}
+.player-seek input[type="range"] { flex: 1; min-width: 60px; }
+.player-right input[type="range"] { width: 72px; }
+.player-time { font-size: 13px; color: var(--fg-soft); font-variant-numeric: tabular-nums; flex: none; }
+
+.player-right { display: flex; align-items: center; gap: 6px; flex: none; }
+
+/* ---------- 音乐：歌单 ---------- */
+
+.track-list { border-top: 1px solid var(--line); margin-top: 4px; }
+
+.track-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 10px 10px 0;
+  border-bottom: 1px solid var(--line-soft);
+  transition: background-color 0.12s;
+}
+.track-row:hover { background: var(--bg-subtle); }
+.track-row.active { background: var(--pri-soft); }
+.track-row.active .track-title { color: var(--pri); }
+.track-row.active .track-no { color: var(--pri); }
+
+.track-no { width: 30px; flex: none; font-size: 13px; color: var(--fg-soft); font-variant-numeric: tabular-nums; }
+
+.track-play {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 0;
+  background: none;
+  border: 0;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+}
+.track-title { font-size: 14px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.track-artist { font-size: 13px; color: var(--fg-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.track-badge { flex: none; font-size: 13px; color: var(--fg-soft); }
+.track-tools { flex: none; display: flex; align-items: center; gap: 6px; }
+.track-tools form { margin: 0; }
+
+/* ---------- 音乐：添加表单 ---------- */
+
+.music-form {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr 2fr auto;
+  gap: 10px;
+  align-items: end;
+  margin: 10px 0 4px;
+}
+.music-form .btn { height: 34px; }
+.music-edit-form { grid-template-columns: 1.1fr 0.9fr 0.6fr auto auto; padding-top: 12px; border-top: 1px solid var(--line-soft); }
+.music-import-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 10px; }
+
+/* 上传：文件框宽一些，其余照旧 */
+.music-upload-form { grid-template-columns: 1.4fr 1fr 0.9fr auto; }
+.music-upload-form input[type="file"] {
+  height: 34px;
+  padding: 5px 8px;
+  font-size: 13px;
+  line-height: 22px;
+  color: var(--fg-soft);
+  cursor: pointer;
+}
+.music-upload-form input[type="file"]::file-selector-button {
+  margin-right: 10px;
+  padding: 0 10px;
+  height: 22px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--bg);
+  color: var(--fg);
+  font: inherit;
+  cursor: pointer;
+}
+.music-upload-form input[type="file"]::file-selector-button:hover { border-color: var(--pri); color: var(--pri); }
+
+/* 分片上传：进度条 + 状态行 */
+.up-status { margin-top: 12px; max-width: 760px; }
+.up-bar { height: 6px; border-radius: 3px; background: var(--bg-sunken); overflow: hidden; }
+.up-bar span { display: block; width: 0; height: 100%; background: var(--pri); transition: width .2s linear; }
+.up-status .hint { margin-top: 6px; }
+.up-status .up-error { color: var(--danger); }
+
+@media (max-width: 960px) {
+  .music-form { grid-template-columns: 1fr 1fr; }
+  .music-form .btn { grid-column: span 2; }
+  .player-info { width: 150px; }
+}
+
+@media (max-width: 720px) {
+  .player-right input[type="range"] { display: none; }
+  .player-info { width: 110px; }
+  .mini-player { gap: 8px; padding: 0 10px; }
+  .player-time { display: none; }
+  .music-form { grid-template-columns: 1fr; }
+  .music-form .btn { grid-column: span 1; }
+  .track-badge { display: none; }
 }

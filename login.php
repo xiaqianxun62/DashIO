@@ -105,4 +105,4 @@ page_header(['title' => '登录']);
   </div>
 </section>
 <?php
-page_footer();
+page_footer('', false);

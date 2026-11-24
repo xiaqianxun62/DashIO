@@ -1,12 +1,15 @@
 <?php
 declare(strict_types=1);
 
-/* 统一启动会话（所有引用本库的页面均需要） */
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
+/* 统一启动会话（所有引用本库的页面均需要）
+ * 上传超限时 PHP 会先打一条 Warning（display_errors 开着时），输出已发出去会导致
+ * session_start 失败，这里加 headers_sent 判断并抑制提示，避免整页权限判断被带偏 */
+if (session_status() === PHP_SESSION_NONE && !headers_sent()) {
+    @session_start();
 }
 
 require_once __DIR__ . '/icons.php';
+require_once __DIR__ . '/music.php';
 
 /** HTML 转义 */
 function e($s): string
@@ -187,7 +190,6 @@ function page_header(array $opts = []): void
 <script>try{if(localStorage.getItem('tqr-theme')==='dark'){document.documentElement.setAttribute('data-theme','dark');}}catch(e){}</script>
 </head>
 <body>
-<?= icon_sprite() ?>
 <header class="topbar">
   <div class="topbar-inner">
     <a class="brand" href="<?= u('index.php') ?>">
@@ -219,16 +221,58 @@ function page_header(array $opts = []): void
 <?php
 }
 
-function page_footer(string $extraJs = ''): void
+function page_footer(string $extraJs = '', bool $withPlayer = true): void
 {
     $csrf = csrf_token();
     $isAdmin = is_admin() ? 'true' : 'false';
+
+    /* 全站迷你播放器：没有曲目就不渲染，省一次音频请求 */
+    $tracks = $withPlayer ? music_tracks() : [];
+    $trackJson = '[]';
+    if ($tracks !== []) {
+        $brief = [];
+        foreach ($tracks as $t) {
+            $brief[] = ['i' => (int)$t['id'], 't' => (string)$t['title'], 'a' => (string)$t['artist'], 's' => (string)$t['src']];
+        }
+        $trackJson = (string)json_encode($brief, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
+    }
     ?>
 </main>
+<?php if ($tracks !== []): ?>
+<div class="player-space" aria-hidden="true"></div>
+<div class="mini-player" id="tqrPlayer" data-mode="bar">
+  <div class="player-main">
+    <button class="icon-btn player-btn" id="plPrev" type="button" title="上一首" aria-label="上一首"><?= icon('skip-back') ?></button>
+    <button class="icon-btn player-btn player-play" id="plToggle" type="button" title="播放" aria-label="播放">
+      <span class="pl-icon-play"><?= icon('play') ?></span>
+      <span class="pl-icon-pause" hidden><?= icon('pause') ?></span>
+    </button>
+    <button class="icon-btn player-btn" id="plNext" type="button" title="下一首" aria-label="下一首"><?= icon('skip-forward') ?></button>
+  </div>
+  <div class="player-info">
+    <div class="player-title" id="plTitle">未在播放</div>
+    <div class="player-artist" id="plArtist">&nbsp;</div>
+  </div>
+  <div class="player-seek">
+    <span class="player-time" id="plCur">0:00</span>
+    <input type="range" id="plSeek" min="0" max="1000" value="0" step="1" aria-label="播放进度">
+    <span class="player-time" id="plDur">0:00</span>
+  </div>
+  <div class="player-right">
+    <button class="icon-btn" id="plMute" type="button" title="静音" aria-label="静音">
+      <span class="pl-icon-vol"><?= icon('volume-2') ?></span>
+      <span class="pl-icon-mute" hidden><?= icon('volume-x') ?></span>
+    </button>
+    <input type="range" id="plVol" min="0" max="100" value="80" step="1" aria-label="音量">
+    <a class="icon-btn" href="<?= u('music.php') ?>" title="歌单" aria-label="歌单"><?= icon('list-music') ?></a>
+  </div>
+</div>
+<?php endif; ?>
 <footer class="footer">
   <div>TechQuickRef · 团队技术速查清单 · PHP + MySQL 驱动</div>
   <div class="footer-links">
     <a href="<?= u('index.php') ?>">首页</a>
+    <a href="<?= u('music.php') ?>">音乐</a>
     <?php if (is_admin()): ?><a href="<?= u('admin.php') ?>">管理后台</a><?php endif; ?>
   </div>
 </footer>
@@ -258,6 +302,10 @@ function page_footer(string $extraJs = ''): void
 <script>window.CSRF = <?= json_encode($csrf) ?>;</script>
 <script src="<?= u('assets/js/highlight.js') ?>?v=<?= (int)@filemtime(__DIR__ . '/../assets/js/highlight.js') ?>"></script>
 <script src="<?= u('assets/js/app.js') ?>?v=<?= (int)@filemtime(__DIR__ . '/../assets/js/app.js') ?>"></script>
+<?php if ($tracks !== []): ?>
+<script type="application/json" id="tqrTracks"><?= $trackJson ?></script>
+<script src="<?= u('assets/js/player.js') ?>?v=<?= (int)@filemtime(__DIR__ . '/../assets/js/player.js') ?>"></script>
+<?php endif; ?>
 <?= $extraJs ?>
 </body>
 </html>
